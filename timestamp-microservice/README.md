@@ -2,6 +2,6 @@
 
 Simple timestamp microservice with express.js.
 * For unix time: url/api/unixtime
-* * Example: url/api/1451001600000
+ * Example: url/api/1451001600000
 * For utc time: url/api/utctime
-* * Example: url/api/2015-12-25
+ * Example: url/api/2015-12-25
