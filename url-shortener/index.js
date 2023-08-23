@@ -2,42 +2,34 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const app = express();
+var bodyParser = require('body-parser');
 
-
-
-//const urlparser = require('url');
 const dns = require('dns');
-let counter = 0;
-/** ************************************* */
-/*
-const { MongoClient } = require('mongodb');
-const client = new MongoClient('mongodb+srv://anonkekker:V7VEjKE5LVtd1SzD@cluster0.wrkcxvc.mongodb.net/urlshortener?retryWrites=true&w=majority');
-const db = client.db("urlshortener");
-const urls = db.collections("urls");
-*/
-
-
-
 
 const urlParser = require('url');
 
-var mongoose = require('mongoose');
-mongoose.connect('mongodb+srv://anonkekker:V7VEjKE5LVtd1SzD@cluster0.wrkcxvc.mongodb.net/urlshortener?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
+var mongoose = require('mongoose'); 
+mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+
 
 var Schema = mongoose.Schema;
 
 var urlSchema = new Schema({
-  name: String,
-  age: Number
+  url: String,
+  short_url: Number
 });
 
 let Url;
 Url = mongoose.model("Url", urlSchema);
 
-
-
-
-
+/*     TRUNCATING 
+Url.deleteMany({}).then(function() {
+  console.log("Data deleted"); // Success
+}).catch(function(error) {
+  console.log(error); // Failure
+});
+*/
 
 
 app.use(express.json());
@@ -45,14 +37,9 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-
-
-
-/** ******************************************* **/
-
 // Basic Configuration
-const port = process.env.PORT || 3000;
-
+//const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 app.use(cors());
 
 app.use('/public', express.static(`${process.cwd()}/public`));
@@ -63,9 +50,12 @@ app.get('/', function(req, res) {
 
 
 
+app.use(bodyParser.json());
+
+
+
 
 console.log("hello");
-// Your first API endpoint
 app.post('/api/shorturl', function(req, res) {
   console.log(req.body);
 
@@ -80,48 +70,38 @@ app.post('/api/shorturl', function(req, res) {
   let hostNameOnly = urlParser.parse(urlBody).host;
   console.log(hostNameOnly);
 
-
-  //const dnsLookup = dns.lookup(urlparser.parse(req.body.url).hostname, (err, urlAddress) => {
   const dnsLookup = dns.lookup(hostNameOnly, async (err, urlAddress) => {
     console.log(urlAddress);
     if (!urlAddress) {
       res.json({ error: "Invalid URL" });
     } else {
-      counter++;
-
+      const documentCount = await Url.countDocuments();
+      console.log("document amount:", documentCount);
+      
       const documentToInsert = {
-        url: req.body.url,
-        short_url: counter
+        url: urlBody,
+        short_url: documentCount
       };
 
-      await Url.create(documentToInsert);
+      console.log(documentToInsert);
+      const result = await Url.create(documentToInsert);
 
-      //const result = await urls.create(documentToInsert);
-      res.json({ original: req.body.url, short_url: counter });
+      console.log("result: ", result);
+
+      res.json({ original_url: urlBody, short_url: documentCount });
     }
   })
 });
 
-app.get('/api/shorturl/:short_url', (req, res) => {
-  //if :short_url variable is in document in db, then res.website
 
-  console.log(req.params.short_url);
-  Url.findOne({ short_url: req.params.short_url }, function(err,obj) { 
-    console.log(obj.toObject()); 
-  });
+// Find url corresponding with the integer value :short_url and redirect to it
+app.get('/api/shorturl/:short_url', async (req, res) => {
   
+  const shorturl = req.params.short_url;
+  const result = await Url.findOne({ short_url: +shorturl });
   
-  //console.log(shortUrl.original);
-  
+  res.redirect(result.url);
 });
-
-
-
-
-
-
-
-
 
 
 app.listen(port, function() {
