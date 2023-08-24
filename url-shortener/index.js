@@ -11,8 +11,6 @@ const urlParser = require('url');
 var mongoose = require('mongoose'); 
 mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
-
-
 var Schema = mongoose.Schema;
 
 var urlSchema = new Schema({
@@ -31,14 +29,10 @@ Url.deleteMany({}).then(function() {
 });
 */
 
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-
 // Basic Configuration
-//const port = process.env.PORT || 3000;
 const port = process.env.PORT;
 app.use(cors());
 
@@ -48,14 +42,9 @@ app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-
-
 app.use(bodyParser.json());
 
 
-
-
-console.log("hello");
 app.post('/api/shorturl', function(req, res) {
   console.log(req.body);
 
