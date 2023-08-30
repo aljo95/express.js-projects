@@ -13,10 +13,10 @@ app.get('/', (req, res) => {
 
 app.use(bodyParser.json());
 
+
+
 const mongoose = require('mongoose');
 mongoose.connect(process.env.DB.URI, { useNewUrlParser: true, useUnifiedTopology: true });
-
-
 
 const Schema = mongoose.Schema;
 
@@ -24,6 +24,7 @@ const nameSchema = new Schema({
   username: String
 });
 const username = mongoose.model("username", nameSchema);
+
 
 const exerciseSchema = new Schema({
   user_id: { type: String, required: true },
@@ -33,9 +34,11 @@ const exerciseSchema = new Schema({
 });
 const Exercise = mongoose.model("Exercise", exerciseSchema);
 
+
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 app.post('/api/users', async (req, res) => {
 
@@ -51,7 +54,6 @@ app.post('/api/users', async (req, res) => {
     console.log(err);
   }
 });
-
 
 
 app.post('/api/users/:_id/exercises', async (req, res) => {
@@ -87,8 +89,6 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
 });
 
 
-
-
 app.get('/api/users', async (req, res) => {
   await username.find({}).then((users) => {
     res.json(users);
@@ -97,7 +97,8 @@ app.get('/api/users', async (req, res) => {
 
 app.get('/api/users/:_id/logs', async (req, res) => {
   const userID = req.params._id;
-  const { from, to, limit } = req.query;
+  const { from, to } = req.query;
+  let limit = req.query.limit;
   const userFind = await username.findById(userID);
   if (!userFind) {
     res.send("User not found");
@@ -112,10 +113,11 @@ app.get('/api/users/:_id/logs', async (req, res) => {
   }
   if (from || to) filter.date = dateObj; // now has correct format (date: {'$gte': dateZ })
 
-  console.log(filter);
-  const exercises = await Exercise.find(filter);
+  // Handle limit, if not given set to 100 as default
+  !limit ? limit = 100 : limit = parseInt(limit, 10);
 
-  
+  const exercises = await Exercise.find(filter).limit(limit);
+
   let log = [];
   for (const objectIndex in exercises) {
     
@@ -127,18 +129,13 @@ app.get('/api/users/:_id/logs', async (req, res) => {
 
   };
   
-
   res.json({
     username: userFind.username,
     count: exercises.length,
     _id: userFind._id,
     log
   });
-
-  
 });
-
-
 
 
 const listener = app.listen(process.env.PORT, () => {
