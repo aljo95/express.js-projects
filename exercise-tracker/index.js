@@ -14,9 +14,7 @@ app.get('/', (req, res) => {
 app.use(bodyParser.json());
 
 const mongoose = require('mongoose');
-//mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-mongoose.connect('mongodb+srv://anonkekker:V7VEjKE5LVtd1SzD@cluster0.wrkcxvc.mongodb.net/exerciseTracker?retryWrites=true&w=majority',
-  { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.DB.URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
 
@@ -35,15 +33,6 @@ const exerciseSchema = new Schema({
 });
 const Exercise = mongoose.model("Exercise", exerciseSchema);
 
-//TRUNCATING 
-/*
-Name.deleteMany({}).then(function() {
-  console.log("Data deleted"); // Success
-}).catch(function(error) {
-  console.log(error); // Failure
-});
-*/
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -61,7 +50,6 @@ app.post('/api/users', async (req, res) => {
   } catch (err) {
     console.log(err);
   }
-  //res.json({ username: result.username });
 });
 
 
@@ -153,6 +141,6 @@ app.get('/api/users/:_id/logs', async (req, res) => {
 
 
 
-const listener = app.listen(process.env.PORT || 3000, () => {
+const listener = app.listen(process.env.PORT, () => {
   console.log('Your app is listening on port ' + listener.address().port)
 })
