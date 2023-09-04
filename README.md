@@ -1,2 +1,2 @@
-### A few different express.js projects focusing on different aspects of the backend and APIs.
+### A few different express.js projects focusing on different aspects of the backend and APIs using MongoDB.
 #### For more detailed information about each project check the readme within the project's folder.
